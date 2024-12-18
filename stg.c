@@ -15,13 +15,13 @@ StgWord **SpA = (StgWord **)&Sp[10000];
 StgWord *Node;
 
 void push_b(void *value) {
-  SpB[0] = (StgWord)value;
+  SpB[1] = (StgWord)value;
   SpB = SpB + 1;
 }
 
 StgWord pop_b() {
   SpB = SpB - 1;
-  return SpB[0];
+  return SpB[1];
 }
 
 void push_a(void *value) {
