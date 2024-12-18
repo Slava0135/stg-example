@@ -4,7 +4,7 @@
 #define PRINT_FUNCTION_NAME() printf("[%s]\n", __func__)
 
 #define JUMP(code_label) return (CodeLabel) & code_label
-#define ENTER(node) JUMP((*((CodeLabel **)node[0]))[0])
+#define ENTER(node) JUMP(***((CodeLabel ***)node))
 
 typedef void *(*CodeLabel)();
 typedef void *StgWord;
