@@ -14,6 +14,9 @@ StgWord *SpB = Sp;
 StgWord **SpA = (StgWord **)&Sp[10000];
 
 StgWord *Node;
+StgWord *RetVecReg;
+
+int int_reg;
 
 void push_b(void *value) {
   SpB[1] = (StgWord)value;
@@ -40,7 +43,8 @@ StgWord *pop_a() {
 // one = {} \n {} -> Int# {1#}
 CodeLabel one_direct() {
   PRINT_FUNCTION_NAME();
-  StgWord *RetVecReg = pop_b();
+  int_reg = 1;
+  RetVecReg = pop_b();
   JUMP(*RetVecReg[0]);
 }
 CodeLabel one_entry() {
@@ -80,9 +84,16 @@ StgWord plus_closure[] = {&plus_info};
 
 ///// main /////
 
+CodeLabel return_int() {
+  PRINT_FUNCTION_NAME();
+  printf("Result = %d\n", int_reg);
+  exit(0);
+}
+StgWord return_int_return_vec[] = {return_int};
+
 CodeLabel main_direct() {
   PRINT_FUNCTION_NAME();
-  exit(0);
+  JUMP(one_direct);
 }
 CodeLabel main_entry() {
   PRINT_FUNCTION_NAME();
@@ -92,6 +103,7 @@ StgWord main_info[] = {main_entry};
 StgWord *main_closure[] = {(StgWord *)&main_info};
 
 int main() {
+  push_b(return_int_return_vec);
   CodeLabel cont = (CodeLabel)&main_entry;
   while (1) {
     cont = (*cont)();
