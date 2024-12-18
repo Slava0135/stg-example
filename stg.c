@@ -2,6 +2,7 @@
 #include "stdlib.h"
 
 #define PRINT_FUNCTION_NAME() printf("[%s]\n", __func__)
+
 #define JUMP(code_label) return (CodeLabel) & code_label
 #define ENTER(node) JUMP((*((CodeLabel **)node[0]))[0])
 
@@ -34,6 +35,21 @@ StgWord *pop_a() {
   return SpB[-1];
 }
 
+///// constants /////
+
+// one = {} \n {} -> Int# {1#}
+CodeLabel one_direct() {
+  PRINT_FUNCTION_NAME();
+  StgWord *RetVecReg = pop_b();
+  JUMP(*RetVecReg[0]);
+}
+CodeLabel one_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(one_direct);
+}
+StgWord one_info[] = {one_entry};
+StgWord one_closure[] = {&one_info};
+
 ///// plus /////
 
 CodeLabel plus_return_Int2() {
@@ -51,7 +67,7 @@ StgWord plus_return_vec1[] = {plus_return_Int1};
 /* plus = {} \n {l,r} -> ... */
 CodeLabel plus_direct() {
   PRINT_FUNCTION_NAME();
-  push_b(plus_return_vec1); // push case alternatives on return stack
+  push_b(plus_return_vec1);
   Node = SpA[0];
   ENTER(Node);
 }
