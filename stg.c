@@ -54,6 +54,34 @@ CodeLabel one_entry() {
 StgWord one_info[] = {one_entry};
 StgWord one_closure[] = {&one_info};
 
+// two = {} \n {} -> Int# {2#}
+CodeLabel two_direct() {
+  PRINT_FUNCTION_NAME();
+  int_reg = 2;
+  RetVecReg = pop_b();
+  JUMP(*RetVecReg[0]);
+}
+CodeLabel two_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(two_direct);
+}
+StgWord two_info[] = {two_entry};
+StgWord two_closure[] = {&two_info};
+
+// one_hundred = {} \n {} -> Int# {100#}
+CodeLabel one_hundred_direct() {
+  PRINT_FUNCTION_NAME();
+  int_reg = 100;
+  RetVecReg = pop_b();
+  JUMP(*RetVecReg[0]);
+}
+CodeLabel one_hundred_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(one_hundred_direct);
+}
+StgWord one_hundred_info[] = {one_hundred_entry};
+StgWord one_hundred_closure[] = {&one_hundred_info};
+
 ///// plus /////
 
 CodeLabel plus_return_Int2() {
@@ -68,7 +96,7 @@ CodeLabel plus_return_Int1() {
 }
 StgWord plus_return_vec1[] = {plus_return_Int1};
 
-/* plus = {} \n {l,r} -> ... */
+// plus = {} \n {l,r} -> ...
 CodeLabel plus_direct() {
   PRINT_FUNCTION_NAME();
   push_b(plus_return_vec1);
