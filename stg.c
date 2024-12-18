@@ -14,7 +14,7 @@ StgWord *SpB = Sp;
 StgWord **SpA = (StgWord **)&Sp[10000];
 
 StgWord *Node;
-StgWord *RetVecReg;
+StgWord **RetVecReg;
 
 int int_reg;
 
