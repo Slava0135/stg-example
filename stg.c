@@ -23,6 +23,10 @@ StgWord *RetVecReg;
 int int_reg;
 int bool_reg;
 
+StgWord expr_reg1;
+StgWord expr_reg2;
+StgWord expr_reg3;
+
 void push_b(StgWord value) {
   SpB[1] = value;
   SpB = SpB + 1;
@@ -235,8 +239,13 @@ StgWord eq_closure[] = {&eq_info};
 
 CodeLabel pow_return_Int1() {
   if (int_reg == 0) {
-
+    pop_a(); // pop n
+    pop_a(); // pop e
+    expr_reg1 = (StgWord)1;
+    RetVecReg = pop_b();
+    JUMP(RetVecReg[0]);
   } else {
+    
   }
 }
 StgWord pow_return_vec1[] = {pow_return_Int1};
@@ -266,7 +275,7 @@ StgWord return_int_return_vec[] = {return_int};
 
 CodeLabel main_direct() {
   PRINT_FUNCTION_NAME();
-  JUMP(one_direct);
+  JUMP(one_direct); // static
 }
 CodeLabel main_entry() {
   PRINT_FUNCTION_NAME();
