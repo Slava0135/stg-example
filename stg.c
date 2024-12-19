@@ -259,11 +259,11 @@ StgWord pow_ns_info[] = {pow_ns_entry};
 CodeLabel pow_return_Int1() {
   PRINT_FUNCTION_NAME();
   if (int_reg == 0) {
-    pop_a(); // pop n
-    pop_a(); // pop e 
     expr_reg1 = (StgWord)1;
     RetVecReg = pop_b();
-    JUMP(RetVecReg[0]);
+    pop_a();            // pop e
+    pop_a();            // pop n
+    JUMP(RetVecReg[0]); // continue with Lit
   } else {
     StgWord e = Node[0];
     StgWord n = Node[1];
@@ -280,9 +280,9 @@ CodeLabel pow_return_Int1() {
     expr_reg1 = (StgWord)ns;
     expr_reg2 = (StgWord)pows;
     RetVecReg = pop_b();
-    pop_a(); // pop e
-    pop_a(); // pop n
-    JUMP(RetVecReg[0]);
+    pop_a();            // pop e
+    pop_a();            // pop n
+    JUMP(RetVecReg[0]); // continue with Mul
   }
 }
 StgWord pow_return_vec1[] = {pow_return_Int1};
