@@ -253,7 +253,13 @@ CodeLabel pow_pows_entry() { PRINT_FUNCTION_NAME(); }
 StgWord pow_pows_info[] = {pow_pows_entry};
 
 // n' = {n} \u {} -> sub {n,one}
-CodeLabel pow_ns_entry() { PRINT_FUNCTION_NAME(); }
+CodeLabel pow_ns_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord n = Node[1];
+  push_a(one_closure);
+  push_a((StgWord *)n);
+  JUMP(sub_direct);
+}
 StgWord pow_ns_info[] = {pow_ns_entry};
 
 CodeLabel pow_return_Int1() {
