@@ -248,8 +248,17 @@ StgWord eq_closure[] = {&eq_info};
 
 ///// pow /////
 
+CodeLabel pow_direct();
+
 // pow' = {e,n'} \u {} -> pow {e,n'}
-CodeLabel pow_pows_entry() { PRINT_FUNCTION_NAME(); }
+CodeLabel pow_pows_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord e = Node[1];
+  StgWord ns = Node[2];
+  push_a(ns);
+  push_a(e);
+  JUMP(pow_direct); // static
+}
 StgWord pow_pows_info[] = {pow_pows_entry};
 
 // n' = {n} \u {} -> sub {n,one}
@@ -257,8 +266,8 @@ CodeLabel pow_ns_entry() {
   PRINT_FUNCTION_NAME();
   StgWord n = Node[1];
   push_a(one_closure);
-  push_a((StgWord *)n);
-  JUMP(sub_direct);
+  push_a(n);
+  JUMP(sub_direct); // static
 }
 StgWord pow_ns_info[] = {pow_ns_entry};
 
