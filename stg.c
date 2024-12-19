@@ -307,7 +307,7 @@ CodeLabel pow_direct() {
   PRINT_FUNCTION_NAME();
   push_b(pow_return_vec1);
   Node = SpA[1];
-  ENTER(Node);
+  ENTER(Node); // enter n
 }
 CodeLabel pow_entry() {
   PRINT_FUNCTION_NAME();
