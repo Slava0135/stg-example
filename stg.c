@@ -10,7 +10,7 @@
 #define RET_INT 0
 
 #define RET_TRUE 0
-#define RET_FALSE 0
+#define RET_FALSE 1
 
 #define RET_LIT 0
 #define RET_VAR 1
