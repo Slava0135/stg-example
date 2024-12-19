@@ -282,7 +282,7 @@ CodeLabel pow_return_Int1() {
     RetVecReg = pop_b();
     pop_a();            // pop e
     pop_a();            // pop n
-    JUMP(RetVecReg[0]); // continue with Mul
+    JUMP(RetVecReg[3]); // continue with Mul
   }
 }
 StgWord pow_return_vec1[] = {pow_return_Int1};
