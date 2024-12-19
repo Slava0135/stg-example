@@ -7,6 +7,9 @@
 #define JUMP(code_label) return (CodeLabel) & code_label
 #define ENTER(node) JUMP(***((CodeLabel ***)node))
 
+#define TRUE 1
+#define FALSE 0
+
 typedef void *(*CodeLabel)();
 typedef void *StgWord;
 
@@ -18,6 +21,7 @@ StgWord *Node;
 StgWord **RetVecReg;
 
 int int_reg;
+int bool_reg;
 
 void push_b(StgWord value) {
   SpB[1] = value;
@@ -117,6 +121,115 @@ CodeLabel plus_entry() {
 }
 StgWord plus_info[] = {plus_entry};
 StgWord plus_closure[] = {&plus_info};
+
+///// mult /////
+
+CodeLabel mult_return_Int2() {
+  PRINT_FUNCTION_NAME();
+  int l = (intptr_t)pop_b();
+  int r = int_reg;
+  int_reg = l * r;
+  RetVecReg = pop_b();
+  ENTER(*RetVecReg[0]);
+}
+StgWord mult_return_vec2[] = {mult_return_Int2};
+
+CodeLabel mult_return_Int1() {
+  PRINT_FUNCTION_NAME();
+  push_b((StgWord)(intptr_t)int_reg);
+  push_b(plus_return_Int2);
+  Node = SpA[1];
+  ENTER(Node);
+}
+StgWord mult_return_vec1[] = {mult_return_Int1};
+
+// mult = {} \n {l,r} -> ...
+CodeLabel mult_direct() {
+  PRINT_FUNCTION_NAME();
+  push_b(mult_return_vec1);
+  Node = SpA[0];
+  ENTER(Node);
+}
+CodeLabel mult_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(mult_direct);
+}
+StgWord mult_info[] = {mult_entry};
+StgWord mult_closure[] = {&mult_info};
+
+///// sub /////
+
+CodeLabel sub_return_Int2() {
+  PRINT_FUNCTION_NAME();
+  int l = (intptr_t)pop_b();
+  int r = int_reg;
+  int_reg = l - r;
+  RetVecReg = pop_b();
+  ENTER(*RetVecReg[0]);
+}
+StgWord sub_return_vec2[] = {sub_return_Int2};
+
+CodeLabel sub_return_Int1() {
+  PRINT_FUNCTION_NAME();
+  push_b((StgWord)(intptr_t)int_reg);
+  push_b(plus_return_Int2);
+  Node = SpA[1];
+  ENTER(Node);
+}
+StgWord sub_return_vec1[] = {sub_return_Int1};
+
+// sub = {} \n {l,r} -> ...
+CodeLabel sub_direct() {
+  PRINT_FUNCTION_NAME();
+  push_b(sub_return_vec1);
+  Node = SpA[0];
+  ENTER(Node);
+}
+CodeLabel sub_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(sub_direct);
+}
+StgWord sub_info[] = {sub_entry};
+StgWord sub_closure[] = {&sub_info};
+
+///// eq /////
+
+CodeLabel eq_return_Int2() {
+  PRINT_FUNCTION_NAME();
+  int l = (intptr_t)pop_b();
+  int r = int_reg;
+  if (l == r) {
+    bool_reg = TRUE;
+  } else {
+    bool_reg = FALSE;
+  }
+  RetVecReg = pop_b();
+  ENTER(*RetVecReg[0]);
+}
+StgWord eq_return_vec2[] = {eq_return_Int2};
+
+CodeLabel eq_return_Int1() {
+  PRINT_FUNCTION_NAME();
+  push_b((StgWord)(intptr_t)int_reg);
+  push_b(plus_return_Int2);
+  Node = SpA[1];
+  ENTER(Node);
+}
+StgWord eq_return_vec1[] = {eq_return_Int1};
+
+// eq = {} \n {l,r} -> ...
+CodeLabel eq_direct() {
+  PRINT_FUNCTION_NAME();
+  push_b(eq_return_vec1);
+  Node = SpA[0];
+  ENTER(Node);
+}
+CodeLabel eq_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(eq_direct);
+}
+StgWord eq_info[] = {eq_entry};
+StgWord eq_closure[] = {&eq_info};
 
 ///// main /////
 
