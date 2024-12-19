@@ -7,6 +7,17 @@
 #define JUMP(code_label) return (CodeLabel)code_label
 #define ENTER(node) JUMP(**((CodeLabel **)node))
 
+#define RET_INT 0
+
+#define RET_TRUE 0
+#define RET_FALSE 0
+
+#define RET_LIT 0
+#define RET_VAR 1
+#define RET_ADD 2
+#define RET_MUL 3
+#define RET_LET 4
+
 typedef void *(*CodeLabel)();
 typedef void *StgWord;
 
@@ -58,7 +69,7 @@ CodeLabel one_direct() {
   PRINT_FUNCTION_NAME();
   int_reg = 1;
   RetVecReg = pop_b();
-  JUMP(RetVecReg[0]); // continue with Int#
+  JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
 CodeLabel one_entry() {
   PRINT_FUNCTION_NAME();
@@ -72,7 +83,7 @@ CodeLabel two_direct() {
   PRINT_FUNCTION_NAME();
   int_reg = 2;
   RetVecReg = pop_b();
-  JUMP(RetVecReg[0]); // continue with Int#
+  JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
 CodeLabel two_entry() {
   PRINT_FUNCTION_NAME();
@@ -86,7 +97,7 @@ CodeLabel one_hundred_direct() {
   PRINT_FUNCTION_NAME();
   int_reg = 100;
   RetVecReg = pop_b();
-  JUMP(RetVecReg[0]); // continue with Int#
+  JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
 CodeLabel one_hundred_entry() {
   PRINT_FUNCTION_NAME();
@@ -103,9 +114,9 @@ CodeLabel plus_return_Int2() {
   int rI = int_reg;
   int_reg = lI + rI;
   RetVecReg = pop_b();
-  pop_a();            // pop l
-  pop_a();            // pop r
-  JUMP(RetVecReg[0]); // continue with Int#
+  pop_a();                  // pop l
+  pop_a();                  // pop r
+  JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
 StgWord plus_return_vec2[] = {plus_return_Int2};
 
@@ -140,9 +151,9 @@ CodeLabel mult_return_Int2() {
   int rI = int_reg;
   int_reg = lI * rI;
   RetVecReg = pop_b();
-  pop_a();            // pop l
-  pop_a();            // pop r
-  JUMP(RetVecReg[0]); // continue with Int#
+  pop_a();                  // pop l
+  pop_a();                  // pop r
+  JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
 StgWord mult_return_vec2[] = {mult_return_Int2};
 
@@ -177,9 +188,9 @@ CodeLabel sub_return_Int2() {
   int rI = int_reg;
   int_reg = lI - rI;
   RetVecReg = pop_b();
-  pop_a();            // pop l
-  pop_a();            // pop r
-  JUMP(RetVecReg[0]); // continue with Int#
+  pop_a();                  // pop l
+  pop_a();                  // pop r
+  JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
 StgWord sub_return_vec2[] = {sub_return_Int2};
 
@@ -216,9 +227,9 @@ CodeLabel eq_return_Int2() {
   pop_a(); // pop l
   pop_a(); // pop r
   if (lI == rI) {
-    JUMP(RetVecReg[0]); // continue with TRUE
+    JUMP(RetVecReg[RET_TRUE]); // continue with TRUE
   } else {
-    JUMP(RetVecReg[1]); // continue with FALSE
+    JUMP(RetVecReg[RET_FALSE]); // continue with FALSE
   }
 }
 StgWord eq_return_vec2[] = {eq_return_Int2};
@@ -276,9 +287,9 @@ CodeLabel pow_return_Int1() {
   if (int_reg == 0) {
     expr_reg1 = (StgWord)1;
     RetVecReg = pop_b();
-    pop_a();            // pop e
-    pop_a();            // pop n
-    JUMP(RetVecReg[0]); // continue with Lit
+    pop_a();                  // pop e
+    pop_a();                  // pop n
+    JUMP(RetVecReg[RET_LIT]); // continue with Lit
   } else {
     StgWord e = Node[0];
     StgWord n = Node[1];
@@ -295,9 +306,9 @@ CodeLabel pow_return_Int1() {
     expr_reg1 = (StgWord)ns;
     expr_reg2 = (StgWord)pows;
     RetVecReg = pop_b();
-    pop_a();            // pop e
-    pop_a();            // pop n
-    JUMP(RetVecReg[3]); // continue with Mul
+    pop_a();                  // pop e
+    pop_a();                  // pop n
+    JUMP(RetVecReg[RET_MUL]); // continue with Mul
   }
 }
 StgWord pow_return_vec1[] = {pow_return_Int1};
@@ -314,7 +325,38 @@ CodeLabel pow_entry() {
   JUMP(pow_direct);
 }
 StgWord pow_info[] = {pow_entry};
-StgWord pow_closure[] = {&pow_info};
+
+///// sop /////
+
+CodeLabel sop_return_Int1() {
+  PRINT_FUNCTION_NAME();
+  if (int_reg == 0) {
+    expr_reg1 = (StgWord)1;
+    RetVecReg = pop_b();
+    pop_a();                  // pop e
+    pop_a();                  // pop n
+    JUMP(RetVecReg[RET_LIT]); // continue with Lit
+  } else {
+    ??? // fill...
+    pop_a();                  // pop e
+    pop_a();                  // pop n
+    JUMP(RetVecReg[RET_LET]); // continue with Let
+  }
+}
+StgWord sop_return_vec1[] = {sop_return_Int1};
+
+// sop = {} \n {e,n} -> ...
+CodeLabel sop_direct() {
+  PRINT_FUNCTION_NAME();
+  push_b(sop_return_vec1);
+  Node = SpA[1];
+  ENTER(Node); // enter n
+}
+CodeLabel sop_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(sop_direct);
+}
+StgWord sop_info[] = {sop_entry};
 
 ///// main /////
 
