@@ -260,7 +260,7 @@ CodeLabel pow_return_Int1() {
   PRINT_FUNCTION_NAME();
   if (int_reg == 0) {
     pop_a(); // pop n
-    pop_a(); // pop e
+    pop_a(); // pop e 
     expr_reg1 = (StgWord)1;
     RetVecReg = pop_b();
     JUMP(RetVecReg[0]);
@@ -280,8 +280,8 @@ CodeLabel pow_return_Int1() {
     expr_reg1 = (StgWord)ns;
     expr_reg2 = (StgWord)pows;
     RetVecReg = pop_b();
-    pop_a(); // pop n
     pop_a(); // pop e
+    pop_a(); // pop n
     JUMP(RetVecReg[0]);
   }
 }
