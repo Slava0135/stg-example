@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "stdlib.h"
+#include <stdint.h>
 
 #define PRINT_FUNCTION_NAME() printf("[%s]\n", __func__)
 
@@ -18,8 +19,8 @@ StgWord **RetVecReg;
 
 int int_reg;
 
-void push_b(void *value) {
-  SpB[1] = (StgWord)value;
+void push_b(StgWord value) {
+  SpB[1] = value;
   SpB = SpB + 1;
 }
 
@@ -28,8 +29,8 @@ StgWord pop_b() {
   return SpB[1];
 }
 
-void push_a(void *value) {
-  SpA[-1] = (StgWord *)value;
+void push_a(StgWord *value) {
+  SpA[-1] = value;
   SpA = SpA - 1;
 }
 
@@ -86,12 +87,19 @@ StgWord one_hundred_closure[] = {&one_hundred_info};
 
 CodeLabel plus_return_Int2() {
   PRINT_FUNCTION_NAME();
-  ENTER(Node);
+  int l = (intptr_t)pop_b();
+  int r = int_reg;
+  int_reg = l + r;
+  RetVecReg = pop_b();
+  ENTER(*RetVecReg[0]);
 }
 StgWord plus_return_vec2[] = {plus_return_Int2};
 
 CodeLabel plus_return_Int1() {
   PRINT_FUNCTION_NAME();
+  push_b((StgWord)(intptr_t)int_reg);
+  push_b(plus_return_Int2);
+  Node = SpA[1];
   ENTER(Node);
 }
 StgWord plus_return_vec1[] = {plus_return_Int1};
