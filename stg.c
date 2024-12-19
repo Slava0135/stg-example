@@ -17,6 +17,9 @@ StgWord Sp[10000];
 StgWord *SpB = Sp;
 StgWord **SpA = (StgWord **)&Sp[10000];
 
+StgWord heap[10000];
+StgWord *Hp = heap;
+
 StgWord *Node;
 StgWord *RetVecReg;
 
@@ -45,6 +48,11 @@ void push_a(StgWord *value) {
 StgWord *pop_a() {
   SpA = SpA + 1;
   return SpB[-1];
+}
+
+void allocate(StgWord value) {
+  Hp[1] = value;
+  Hp = Hp + 1;
 }
 
 ///// constants /////
@@ -237,7 +245,16 @@ StgWord eq_closure[] = {&eq_info};
 
 ///// pow /////
 
+// pow' = {e,n'} \u {} -> pow {e,n'}
+CodeLabel pow_pows_entry() { PRINT_FUNCTION_NAME(); }
+StgWord pow_pows_info[] = {pow_pows_entry};
+
+// n' = {n} \u {} -> sub {n,one}
+CodeLabel pow_ns_entry() { PRINT_FUNCTION_NAME(); }
+StgWord pow_ns_info[] = {pow_ns_entry};
+
 CodeLabel pow_return_Int1() {
+  PRINT_FUNCTION_NAME();
   if (int_reg == 0) {
     pop_a(); // pop n
     pop_a(); // pop e
@@ -245,7 +262,24 @@ CodeLabel pow_return_Int1() {
     RetVecReg = pop_b();
     JUMP(RetVecReg[0]);
   } else {
-    
+    StgWord e = Node[0];
+    StgWord n = Node[1];
+    // fill closure n'
+    allocate(pow_ns_info);
+    StgWord *ns = &Hp;
+    allocate(n);
+    // fill closure pow'
+    allocate(pow_pows_info);
+    StgWord *pows = &Hp;
+    allocate(e);
+    allocate((StgWord)ns);
+    // return
+    expr_reg1 = (StgWord)ns;
+    expr_reg2 = (StgWord)pows;
+    RetVecReg = pop_b();
+    pop_a(); // pop n
+    pop_a(); // pop e
+    JUMP(RetVecReg[0]);
   }
 }
 StgWord pow_return_vec1[] = {pow_return_Int1};
