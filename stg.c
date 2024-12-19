@@ -4,8 +4,8 @@
 
 #define PRINT_FUNCTION_NAME() printf("[%s]\n", __func__)
 
-#define JUMP(code_label) return (CodeLabel) & code_label
-#define ENTER(node) JUMP(***((CodeLabel ***)node))
+#define JUMP(code_label) return (CodeLabel)code_label
+#define ENTER(node) JUMP(**((CodeLabel **)node))
 
 #define TRUE 1
 #define FALSE 0
@@ -18,7 +18,7 @@ StgWord *SpB = Sp;
 StgWord **SpA = (StgWord **)&Sp[10000];
 
 StgWord *Node;
-StgWord **RetVecReg;
+StgWord *RetVecReg;
 
 int int_reg;
 int bool_reg;
@@ -50,7 +50,7 @@ CodeLabel one_direct() {
   PRINT_FUNCTION_NAME();
   int_reg = 1;
   RetVecReg = pop_b();
-  JUMP(*RetVecReg[0]);
+  JUMP(RetVecReg[0]);
 }
 CodeLabel one_entry() {
   PRINT_FUNCTION_NAME();
@@ -64,7 +64,7 @@ CodeLabel two_direct() {
   PRINT_FUNCTION_NAME();
   int_reg = 2;
   RetVecReg = pop_b();
-  JUMP(*RetVecReg[0]);
+  JUMP(RetVecReg[0]);
 }
 CodeLabel two_entry() {
   PRINT_FUNCTION_NAME();
@@ -78,7 +78,7 @@ CodeLabel one_hundred_direct() {
   PRINT_FUNCTION_NAME();
   int_reg = 100;
   RetVecReg = pop_b();
-  JUMP(*RetVecReg[0]);
+  JUMP(RetVecReg[0]);
 }
 CodeLabel one_hundred_entry() {
   PRINT_FUNCTION_NAME();
@@ -95,7 +95,7 @@ CodeLabel plus_return_Int2() {
   int r = int_reg;
   int_reg = l + r;
   RetVecReg = pop_b();
-  ENTER(*RetVecReg[0]);
+  JUMP(RetVecReg[0]);
 }
 StgWord plus_return_vec2[] = {plus_return_Int2};
 
@@ -130,7 +130,7 @@ CodeLabel mult_return_Int2() {
   int r = int_reg;
   int_reg = l * r;
   RetVecReg = pop_b();
-  ENTER(*RetVecReg[0]);
+  JUMP(RetVecReg[0]);
 }
 StgWord mult_return_vec2[] = {mult_return_Int2};
 
@@ -165,7 +165,7 @@ CodeLabel sub_return_Int2() {
   int r = int_reg;
   int_reg = l - r;
   RetVecReg = pop_b();
-  ENTER(*RetVecReg[0]);
+  JUMP(RetVecReg[0]);
 }
 StgWord sub_return_vec2[] = {sub_return_Int2};
 
@@ -204,7 +204,7 @@ CodeLabel eq_return_Int2() {
     bool_reg = FALSE;
   }
   RetVecReg = pop_b();
-  ENTER(*RetVecReg[0]);
+  JUMP(RetVecReg[0]);
 }
 StgWord eq_return_vec2[] = {eq_return_Int2};
 
@@ -237,7 +237,6 @@ CodeLabel pow_return_Int1() {
   if (int_reg == 0) {
 
   } else {
-    
   }
 }
 StgWord pow_return_vec1[] = {pow_return_Int1};
