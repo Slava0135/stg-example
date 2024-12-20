@@ -9,6 +9,8 @@
 
 #define RET_INT 0
 
+#define RET_VAR_ID 0
+
 #define RET_TRUE 0
 #define RET_FALSE 1
 
@@ -32,7 +34,7 @@ StgWord *Node;
 StgWord *RetVecReg;
 
 int int_reg;
-
+StgWord var_id_reg;
 StgWord expr_reg1;
 StgWord expr_reg2;
 StgWord expr_reg3;
@@ -337,7 +339,6 @@ CodeLabel sop_return_Int1() {
     pop_a();                  // pop n
     JUMP(RetVecReg[RET_LIT]); // continue with Lit
   } else {
-    ??? // fill...
     pop_a();                  // pop e
     pop_a();                  // pop n
     JUMP(RetVecReg[RET_LET]); // continue with Let
