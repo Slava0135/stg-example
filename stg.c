@@ -275,7 +275,7 @@ CodeLabel id_eq_return_VarId1() {
 }
 StgWord id_eq_return_vec1[] = {id_eq_return_VarId1};
 
-// id_eq = {} \n {l_id,r_id} ...
+// id_eq = {} \n {l_id,r_id} -> ...
 CodeLabel id_eq_direct() {
   PRINT_FUNCTION_NAME();
   push_b(id_eq_return_vec1);
@@ -287,6 +287,29 @@ CodeLabel id_eq_entry() {
   JUMP(id_eq_direct);
 }
 StgWord id_eq_info[] = {id_eq_entry};
+
+///// eval /////
+
+// eval = {} \n {valueOf,expr} -> ...
+CodeLabel eval_direct() {
+  PRINT_FUNCTION_NAME();
+  StgWord *valueOf = SpA[0];
+  StgWord *expr = SpA[1];
+  // fill closure go
+  allocate(eval_go_info);
+  StgWord *go = Hp;
+  allocate((StgWord)valueOf);
+  allocate((StgWord)go);
+  // call go
+  Node = go;
+  push_a(expr);
+  ENTER(Node);
+}
+CodeLabel eval_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(eval_direct);
+}
+StgWord eval_info[] = {eval_entry};
 
 ///// pow /////
 
