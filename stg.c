@@ -75,8 +75,9 @@ void push_a(StgWord *value, const char *debug_info) {
 
 StgWord *pop_a() {
   SpA = SpA + 1;
-  StgWord value = SpB[-1];
-  const char *debug_info = DebugSpB[-1];
+  DebugSpA = DebugSpA + 1;
+  StgWord value = SpA[-1];
+  const char *debug_info = DebugSpA[-1];
   printf("popA: %x '%s'\n", value, debug_info);
   return value;
 }
