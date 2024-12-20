@@ -330,6 +330,72 @@ StgWord pow_info[] = {pow_entry};
 
 ///// sop /////
 
+CodeLabel sop_direct();
+
+// pow' = {e,n} \u {} -> pow' {e,n}
+CodeLabel sops_pows_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord e = Node[1];
+  StgWord ns = Node[2];
+  push_a(ns);
+  push_a(e);
+  JUMP(pow_direct); // static
+}
+StgWord sop_pows_info[] = {sops_pows_entry};
+
+// add = {var_z,sop'} \n {} Add {var_z,sop'}
+CodeLabel sops_add_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord var_z = Node[1];
+  StgWord sops = Node[2];
+  expr_reg1 = var_z;
+  expr_reg2 = sops;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_ADD]);
+}
+StgWord sop_add_info[] = {sops_add_entry};
+
+// var_z = {z} \n {} -> Var {z}
+CodeLabel sops_var_z_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord z = Node[1];
+  expr_reg1 = z;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_VAR]);
+}
+StgWord sop_var_z_info[] = {sops_var_z_entry};
+
+// sop' = {e,n'} \u {} -> sop {e,n'}
+CodeLabel sops_sops_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord e = Node[1];
+  StgWord ns = Node[2];
+  push_a(ns);
+  push_a(e);
+  JUMP(sop_direct); // static
+}
+StgWord sop_sops_info[] = {sops_sops_entry};
+
+// z = {n} \n {} -> VarId {n}
+CodeLabel sops_z_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord n = Node[1];
+  var_id_reg = n;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_VAR_ID]);
+}
+StgWord sop_z_info[] = {sops_z_entry};
+
+// n' = {n} \u {} -> sub {n,one}
+CodeLabel sops_ns_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord n = Node[1];
+  push_a(one_closure);
+  push_a(n);
+  JUMP(sub_direct); // static
+}
+StgWord sop_ns_info[] = {sops_ns_entry};
+
 CodeLabel sop_return_Int1() {
   PRINT_FUNCTION_NAME();
   if (int_reg == 0) {
@@ -339,6 +405,40 @@ CodeLabel sop_return_Int1() {
     pop_a();                  // pop n
     JUMP(RetVecReg[RET_LIT]); // continue with Lit
   } else {
+    StgWord e = Node[0];
+    StgWord n = Node[1];
+    // fill closure z
+    allocate(sop_z_info);
+    StgWord *z = Hp;
+    allocate(n);
+    // fill closure n'
+    allocate(sop_ns_info);
+    StgWord *ns = Hp;
+    allocate(n);
+    // fill closure sop'
+    allocate(sop_sops_info);
+    StgWord *sops = Hp;
+    allocate(e);
+    allocate((StgWord)ns);
+    // fill closure var_z
+    allocate(sop_var_z_info);
+    StgWord *var_z = Hp;
+    allocate(z);
+    // fill closure add
+    allocate(sop_add_info);
+    StgWord *add = Hp;
+    allocate(var_z);
+    allocate(sops);
+    // fill closure pow'
+    allocate(sop_pows_info);
+    StgWord *pows = Hp;
+    allocate(e);
+    allocate((StgWord)n);
+    // return
+    expr_reg1 = (StgWord)z;
+    expr_reg2 = (StgWord)pows;
+    expr_reg3 = (StgWord)add;
+    RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
     JUMP(RetVecReg[RET_LET]); // continue with Let
