@@ -85,7 +85,7 @@ StgWord *pop_a() {
 StgWord* arg(int offset) {
   StgWord value = SpA[offset];
   const char *debug_info = DebugSpA[offset];
-  printf("\targument: %x '%s'\n", value, debug_info);
+  printf("\targument(%d): %x '%s'\n", offset, value, debug_info);
   return value;
 }
 
