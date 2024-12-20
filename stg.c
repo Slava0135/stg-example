@@ -743,9 +743,9 @@ StgWord main_valueOf_return_vec2[] = {main_valueOf_return_Int};
 // VarId {i} -> case i {}
 CodeLabel main_valueOf_return_VarId() {
   PRINT_FUNCTION_NAME();
-  StgWord i = VarIdReg;
-  Node = i;
-  ENTER(Node);
+  push_b(main_valueOf_return_vec2);
+  Node = VarIdReg;
+  ENTER(Node); // enter i
 }
 StgWord main_valueOf_return_vec1[] = {main_valueOf_return_VarId};
 
