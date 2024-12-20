@@ -82,11 +82,11 @@ StgWord *pop_a() {
   return value;
 }
 
-StgWord arg(int offset) {
+StgWord* arg(int offset) {
   StgWord value = SpA[offset];
   const char *debug_info = DebugSpA[offset];
   printf("\targument: %x '%s'\n", value, debug_info);
-  return SpB[offset];
+  return value;
 }
 
 int nodes_saved = 0;
