@@ -454,6 +454,8 @@ CodeLabel eval_direct() {
   allocate((StgWord)valueOf);
   allocate((StgWord)go);
   // call go {expr}
+  pop_a(); // pop valueOf
+  pop_a(); // pop expr
   Node = go;
   push_a(expr);
   ENTER(Node);
