@@ -298,19 +298,68 @@ CodeLabel eval_go_return_lit() {
   Node = n;
   ENTER(n);
 }
+// Var {x} -> valueOf {x}
 CodeLabel eval_go_return_var() {
   PRINT_FUNCTION_NAME();
+  StgWord *valueOf = Node[1];
+  pop_a(); // pop expr
+  StgWord x = ExprReg1;
+  push_a(x);
+  Node = valueOf;
+  ENTER(Node);
 }
+
+// go_l = {go,l} \u {} -> go {l}
+CodeLabel eval_go_add_go_l_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord go = Node[1];
+  StgWord l = Node[2];
+  push_a(l);
+  Node = (StgWord *)go;
+  ENTER(Node);
+}
+StgWord eval_go_add_go_l_info[] = {eval_go_add_go_l_entry};
+// go_r = {go,r} \u {} -> go {r}
+CodeLabel eval_go_add_go_r_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord go = Node[1];
+  StgWord r = Node[2];
+  push_a(r);
+  Node = (StgWord *)go;
+  ENTER(Node);
+}
+StgWord eval_go_add_go_r_info[] = {eval_go_add_go_r_entry};
+
+// Add {l,r} -> ...
 CodeLabel eval_go_return_add() {
   PRINT_FUNCTION_NAME();
+  StgWord *go = Node[2];
+  StgWord l = ExprReg1;
+  StgWord r = ExprReg2;
+  // fill closure go_l
+  allocate(eval_go_add_go_l_info);
+  StgWord *go_l = Hp;
+  allocate(go);
+  allocate(l);
+  // fill closure go_r
+  allocate(eval_go_add_go_r_info);
+  StgWord *go_r = Hp;
+  allocate(go);
+  allocate(r);
+  // call plus
+  pop_a(); // pop expr
+  push_a(go_r);
+  push_a(go_l);
+  JUMP(plus_direct); // static
 }
-CodeLabel eval_go_return_mul() {
-  PRINT_FUNCTION_NAME();
-}
-CodeLabel eval_go_return_let() {
-  PRINT_FUNCTION_NAME();
-}
-StgWord eval_go_return_vec[] = {eval_go_return_lit, eval_go_return_var, eval_go_return_add, eval_go_return_mul, eval_go_return_let};
+// Mul {l,r} -> ...
+CodeLabel eval_go_return_mul() { PRINT_FUNCTION_NAME(); }
+// Let {x,e,body} -> ...
+CodeLabel eval_go_return_let() { PRINT_FUNCTION_NAME(); }
+
+StgWord eval_go_return_vec[] = {eval_go_return_lit, eval_go_return_var,
+                                eval_go_return_add, eval_go_return_mul,
+                                eval_go_return_let};
 
 // go = {valueOf,go} \n {expr} ->
 CodeLabel eval_go_entry() {
