@@ -409,7 +409,7 @@ CodeLabel eval_go_let_valueOfs_entry() {
   StgWord y = SpA[0];
   push_a(y);
   push_a(x);
-  save_node(Node);
+  save_node();
   push_b(eval_go_let_valueOfs_return_vec);
   JUMP(id_eq_direct); // static
 }
