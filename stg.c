@@ -78,6 +78,7 @@ CodeLabel one_entry() {
   JUMP(one_direct);
 }
 StgWord one_info[] = {one_entry};
+StgWord one_closure[] = {one_info};
 
 // two = {} \n {} -> Int# {2#}
 CodeLabel two_direct() {
@@ -91,6 +92,7 @@ CodeLabel two_entry() {
   JUMP(two_direct);
 }
 StgWord two_info[] = {two_entry};
+StgWord two_closure[] = {two_info};
 
 // one_hundred = {} \n {} -> Int# {100#}
 CodeLabel one_hundred_direct() {
@@ -104,6 +106,7 @@ CodeLabel one_hundred_entry() {
   JUMP(one_hundred_direct);
 }
 StgWord one_hundred_info[] = {one_hundred_entry};
+StgWord one_hundred_closure[] = {one_hundred_info};
 
 ///// plus /////
 
@@ -140,6 +143,7 @@ CodeLabel plus_entry() {
   JUMP(plus_direct);
 }
 StgWord plus_info[] = {plus_entry};
+StgWord plus_closure[] = {plus_info};
 
 ///// mult /////
 
@@ -176,6 +180,7 @@ CodeLabel mult_entry() {
   JUMP(mult_direct);
 }
 StgWord mult_info[] = {mult_entry};
+StgWord mult_closure[] = {mult_info};
 
 ///// sub /////
 
@@ -212,6 +217,7 @@ CodeLabel sub_entry() {
   JUMP(sub_direct);
 }
 StgWord sub_info[] = {sub_entry};
+StgWord sub_closure[] = {sub_info};
 
 ///// eq /////
 
@@ -251,6 +257,7 @@ CodeLabel eq_entry() {
   JUMP(eq_direct);
 }
 StgWord eq_info[] = {eq_entry};
+StgWord eq_closure[] = {eq_info};
 
 ///// id_eq /////
 
@@ -287,6 +294,7 @@ CodeLabel id_eq_entry() {
   JUMP(id_eq_direct);
 }
 StgWord id_eq_info[] = {id_eq_entry};
+StgWord id_eq_closure[] = {id_eq_info};
 
 ///// eval /////
 
@@ -455,6 +463,7 @@ CodeLabel eval_entry() {
   JUMP(eval_direct);
 }
 StgWord eval_info[] = {eval_entry};
+StgWord eval_closure[] = {eval_info};
 
 ///// pow /////
 
@@ -475,7 +484,7 @@ StgWord pow_pows_info[] = {pow_pows_entry};
 CodeLabel pow_ns_entry() {
   PRINT_FUNCTION_NAME();
   StgWord n = Node[1];
-  push_a(one_info);
+  push_a(one_closure);
   push_a(n);
   JUMP(sub_direct); // static
 }
@@ -524,6 +533,7 @@ CodeLabel pow_entry() {
   JUMP(pow_direct);
 }
 StgWord pow_info[] = {pow_entry};
+StgWord pow_closure[] = {pow_info};
 
 ///// sop /////
 
@@ -587,7 +597,7 @@ StgWord sop_z_info[] = {sops_z_entry};
 CodeLabel sops_ns_entry() {
   PRINT_FUNCTION_NAME();
   StgWord n = Node[1];
-  push_a(one_info);
+  push_a(one_closure);
   push_a(n);
   JUMP(sub_direct); // static
 }
@@ -655,6 +665,7 @@ CodeLabel sop_entry() {
   JUMP(sop_direct);
 }
 StgWord sop_info[] = {sop_entry};
+StgWord sop_closure[] = {sop_info};
 
 ///// main /////
 
@@ -668,7 +679,7 @@ StgWord return_int_return_vec[] = {return_int};
 // x = {} \n {} -> VarId {one_hundred}
 CodeLabel main_x_entry() {
   PRINT_FUNCTION_NAME();
-  VarIdReg = one_hundred_info;
+  VarIdReg = one_hundred_closure;
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_VAR_ID]); // continue with VarId
 }
@@ -687,7 +698,7 @@ StgWord main_var_x_info[] = {main_var_x_entry};
 // lit_one = {} \n {} -> Lit {one}
 CodeLabel main_lit_one_entry() {
   PRINT_FUNCTION_NAME();
-  ExprReg1 = one_info;
+  ExprReg1 = one_closure;
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_LIT]); // continue with Lit
 }
@@ -709,7 +720,7 @@ StgWord main_add_info[] = {main_add_entry};
 CodeLabel main_e_entry() {
   PRINT_FUNCTION_NAME();
   StgWord add = Node[1];
-  push_a(two_info);
+  push_a(two_closure);
   push_a(add);
   JUMP(sop_direct); // static
 }
@@ -783,7 +794,7 @@ CodeLabel main_direct_debug() {
 }
 CodeLabel main_entry() {
   PRINT_FUNCTION_NAME();
-  JUMP(main_direct_debug);
+  JUMP(main_direct);
 }
 StgWord main_info[] = {main_entry};
 
