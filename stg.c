@@ -78,7 +78,6 @@ CodeLabel one_entry() {
   JUMP(one_direct);
 }
 StgWord one_info[] = {one_entry};
-StgWord one_closure[] = {&one_info};
 
 // two = {} \n {} -> Int# {2#}
 CodeLabel two_direct() {
@@ -92,7 +91,6 @@ CodeLabel two_entry() {
   JUMP(two_direct);
 }
 StgWord two_info[] = {two_entry};
-StgWord two_closure[] = {&two_info};
 
 // one_hundred = {} \n {} -> Int# {100#}
 CodeLabel one_hundred_direct() {
@@ -106,7 +104,6 @@ CodeLabel one_hundred_entry() {
   JUMP(one_hundred_direct);
 }
 StgWord one_hundred_info[] = {one_hundred_entry};
-StgWord one_hundred_closure[] = {&one_hundred_info};
 
 ///// plus /////
 
@@ -124,7 +121,7 @@ StgWord plus_return_vec2[] = {plus_return_Int2};
 
 CodeLabel plus_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b(plus_return_Int2);
+  push_b(plus_return_vec2);
   push_b((StgWord)(intptr_t)int_reg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r
@@ -143,7 +140,6 @@ CodeLabel plus_entry() {
   JUMP(plus_direct);
 }
 StgWord plus_info[] = {plus_entry};
-StgWord plus_closure[] = {&plus_info};
 
 ///// mult /////
 
@@ -161,7 +157,7 @@ StgWord mult_return_vec2[] = {mult_return_Int2};
 
 CodeLabel mult_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b(plus_return_Int2);
+  push_b(mult_return_vec2);
   push_b((StgWord)(intptr_t)int_reg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r
@@ -180,7 +176,6 @@ CodeLabel mult_entry() {
   JUMP(mult_direct);
 }
 StgWord mult_info[] = {mult_entry};
-StgWord mult_closure[] = {&mult_info};
 
 ///// sub /////
 
@@ -198,7 +193,7 @@ StgWord sub_return_vec2[] = {sub_return_Int2};
 
 CodeLabel sub_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b(plus_return_Int2);
+  push_b(sub_return_vec2);
   push_b((StgWord)(intptr_t)int_reg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r
@@ -217,7 +212,6 @@ CodeLabel sub_entry() {
   JUMP(sub_direct);
 }
 StgWord sub_info[] = {sub_entry};
-StgWord sub_closure[] = {&sub_info};
 
 ///// eq /////
 
@@ -238,7 +232,7 @@ StgWord eq_return_vec2[] = {eq_return_Int2};
 
 CodeLabel eq_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b(plus_return_Int2);
+  push_b(eq_return_vec2);
   push_b((StgWord)(intptr_t)int_reg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r
@@ -257,7 +251,42 @@ CodeLabel eq_entry() {
   JUMP(eq_direct);
 }
 StgWord eq_info[] = {eq_entry};
-StgWord eq_closure[] = {&eq_info};
+
+///// id_eq /////
+
+CodeLabel id_eq_return_VarId2() {
+  PRINT_FUNCTION_NAME();
+  StgWord l = pop_b();
+  StgWord r = var_id_reg;
+  pop_a(); // pop l_id
+  pop_a(); // pop r_id
+  push_a(r);
+  push_a(l);
+  JUMP(eq_direct); // static
+}
+StgWord id_eq_return_vec2[] = {id_eq_return_VarId2};
+
+CodeLabel id_eq_return_VarId1() {
+  PRINT_FUNCTION_NAME();
+  push_b(id_eq_return_vec2);
+  push_b(var_id_reg); // push l
+  Node = SpA[1];
+  ENTER(Node); // enter r_id
+}
+StgWord id_eq_return_vec1[] = {id_eq_return_VarId1};
+
+// id_eq = {} \n {l_id,r_id} ...
+CodeLabel id_eq_direct() {
+  PRINT_FUNCTION_NAME();
+  push_b(id_eq_return_vec1);
+  Node = SpA[0];
+  ENTER(Node); // enter l_id
+}
+CodeLabel id_eq_entry() {
+  PRINT_FUNCTION_NAME();
+  JUMP(id_eq_direct);
+}
+StgWord id_eq_info[] = {id_eq_entry};
 
 ///// pow /////
 
@@ -278,7 +307,7 @@ StgWord pow_pows_info[] = {pow_pows_entry};
 CodeLabel pow_ns_entry() {
   PRINT_FUNCTION_NAME();
   StgWord n = Node[1];
-  push_a(one_closure);
+  push_a(one_info);
   push_a(n);
   JUMP(sub_direct); // static
 }
@@ -390,7 +419,7 @@ StgWord sop_z_info[] = {sops_z_entry};
 CodeLabel sops_ns_entry() {
   PRINT_FUNCTION_NAME();
   StgWord n = Node[1];
-  push_a(one_closure);
+  push_a(one_info);
   push_a(n);
   JUMP(sub_direct); // static
 }
