@@ -544,8 +544,8 @@ CodeLabel pow_return_Int1() {
     pop_a();                  // pop n
     JUMP(RetVecReg[RET_LIT]); // continue with Lit
   } else {
-    StgWord e = Node[0];
-    StgWord n = Node[1];
+    StgWord e = arg(0);
+    StgWord n = arg(1);
     // fill closure n' = {n} \u {} -> sub {n,one}
     StgWord *ns_closure = allocate(2);
     ns_closure[0] = pow_ns_info;
