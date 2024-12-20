@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PRINT_FUNCTION_NAME() printf("[%s]\n", __func__)
+#define PRINT_FUNCTION_NAME() printf("%s:%d:[%s]\n", __FILE__, __LINE__, __func__)
 
 #define JUMP(code_label) return (CodeLabel)code_label
 #define ENTER(node) JUMP(**((CodeLabel **)node))
