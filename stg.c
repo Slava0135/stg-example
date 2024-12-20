@@ -665,7 +665,117 @@ CodeLabel return_int() {
 }
 StgWord return_int_return_vec[] = {return_int};
 
-CodeLabel main_direct() { PRINT_FUNCTION_NAME(); }
+// x = {} \n {} -> VarId {one_hundred}
+CodeLabel main_x_entry() {
+  PRINT_FUNCTION_NAME();
+  VarIdReg = one_hundred_info;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_VAR_ID]); // continue with VarId
+}
+StgWord main_x_info[] = {main_x_entry};
+
+// var_x = {x} \n {} -> Var {x}
+CodeLabel main_var_x_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord x = Node[1];
+  ExprReg1 = x;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_VAR]); // continue with Var
+}
+StgWord main_var_x_info[] = {main_var_x_entry};
+
+// lit_one = {} \n {} -> Lit {one}
+CodeLabel main_lit_one_entry() {
+  PRINT_FUNCTION_NAME();
+  ExprReg1 = one_info;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_LIT]); // continue with Lit
+}
+StgWord main_lit_one_info[] = {main_lit_one_entry};
+
+// add = {var_x,lit_one} \n {} -> Add {var_x,lit_one}
+CodeLabel main_add_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord var_x = Node[1];
+  StgWord lit_one = Node[2];
+  ExprReg1 = var_x;
+  ExprReg2 = lit_one;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_ADD]); // continue with Add
+}
+StgWord main_add_info[] = {main_add_entry};
+
+// e = {add} \u {} -> sop {add,two}
+CodeLabel main_e_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord add = Node[1];
+  push_a(two_info);
+  push_a(add);
+  JUMP(sop_direct); // static
+}
+StgWord main_e_info[] = {main_e_entry};
+
+// Int# iI -> case iI {}
+CodeLabel main_valueOf_return_Int() {
+  PRINT_FUNCTION_NAME();
+  int iI = IntReg;
+  if (iI == 100) {
+    IntReg = 8;
+  } else {
+    IntReg = 0;
+  }
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_INT]); // continue with Int
+}
+StgWord main_valueOf_return_vec2[] = {main_valueOf_return_Int};
+
+// VarId {i} -> case i {}
+CodeLabel main_valueOf_return_VarId() {
+  PRINT_FUNCTION_NAME();
+  StgWord i = VarIdReg;
+  Node = i;
+  ENTER(Node);
+}
+StgWord main_valueOf_return_vec1[] = {main_valueOf_return_VarId};
+
+// valueOf = {} \n {varid_i} -> case varid_i {}
+CodeLabel main_valueOf_entry() {
+  PRINT_FUNCTION_NAME();
+  push_b(main_valueOf_return_vec1);
+  Node = SpA[0];
+  ENTER(Node); // enter varid_i
+}
+StgWord main_valueOf_info[] = {main_valueOf_entry};
+
+CodeLabel main_direct() {
+  PRINT_FUNCTION_NAME();
+  // fill closure x = {} \n {} -> VarId {one_hundred}
+  allocate(main_x_info);
+  StgWord *x = Hp;
+  // fill closure var_x = {x} \n {} -> Var {x}
+  allocate(main_var_x_info);
+  StgWord *var_x = Hp;
+  allocate(x);
+  // fill closure lit_one = {} \n {} -> Lit {one}
+  allocate(main_lit_one_info);
+  StgWord *lit_one = Hp;
+  // fill closure add = {var_x,lit_one} \n {} -> Add {var_x,lit_one}
+  allocate(main_add_info);
+  StgWord *add = Hp;
+  allocate(var_x);
+  allocate(lit_one);
+  // fill closure e = {add} \u {} -> sop {add,two}
+  allocate(main_e_info);
+  StgWord *e = Hp;
+  allocate(add);
+  // fill valueOf = {} \n {varid_i} -> case varid_i {}
+  allocate(main_valueOf_info);
+  StgWord *valueOf = Hp;
+  // call eval {valueOf,e}
+  push_a(e);
+  push_a(valueOf);
+  JUMP(eval_direct); // static
+}
 
 CodeLabel main_direct_debug() {
   PRINT_FUNCTION_NAME();
