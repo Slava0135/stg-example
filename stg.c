@@ -1,7 +1,7 @@
+#include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
 
 #define PRINT_FUNCTION_NAME() printf("[%s]\n", __func__)
 
@@ -316,7 +316,7 @@ CodeLabel eval_direct();
 CodeLabel eval_go_return_lit() {
   PRINT_FUNCTION_NAME();
   load_node();
-  pop_a();        // pop expr
+  pop_a(); // pop expr
   StgWord n = ExprReg1;
   Node = n;
   ENTER(n);
@@ -384,7 +384,7 @@ CodeLabel eval_go_return_mul() {
 CodeLabel eval_go_let_valueOfs_return_True() {
   PRINT_FUNCTION_NAME();
   load_node();
-  pop_a();        // pop y
+  pop_a(); // pop y
   StgWord n = Node[2];
   Node = n;
   ENTER(n);
