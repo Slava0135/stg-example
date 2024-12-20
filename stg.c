@@ -1,6 +1,7 @@
-#include "stdio.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 
 #define PRINT_FUNCTION_NAME() printf("[%s]\n", __func__)
 
@@ -57,6 +58,17 @@ void push_a(StgWord *value) {
 StgWord *pop_a() {
   SpA = SpA + 1;
   return SpB[-1];
+}
+
+int nodes_saved = 0;
+void save_node() {
+  nodes_saved++;
+  push_b(Node);
+}
+void load_node() {
+  assert(nodes_saved > 0);
+  nodes_saved--;
+  Node = pop_b();
 }
 
 void allocate(StgWord value) {
@@ -303,7 +315,7 @@ CodeLabel eval_direct();
 // Lit {n} -> n {}
 CodeLabel eval_go_return_lit() {
   PRINT_FUNCTION_NAME();
-  Node = pop_b(); // restore Node
+  load_node();
   pop_a();        // pop expr
   StgWord n = ExprReg1;
   Node = n;
@@ -312,7 +324,7 @@ CodeLabel eval_go_return_lit() {
 // Var {x} -> valueOf {x}
 CodeLabel eval_go_return_var() {
   PRINT_FUNCTION_NAME();
-  Node = pop_b(); // restore Node
+  load_node();
   StgWord *valueOf = Node[1];
   pop_a(); // pop expr
   StgWord x = ExprReg1;
@@ -335,7 +347,7 @@ CodeLabel eval_go_go_lrn_entry() {
 StgWord eval_go_go_lrn_info[] = {eval_go_go_lrn_entry};
 
 void eval_go_return_add_mul_common() {
-  Node = pop_b(); // restore Node
+  load_node();
   StgWord *go = Node[2];
   StgWord l = ExprReg1;
   StgWord r = ExprReg2;
@@ -371,7 +383,7 @@ CodeLabel eval_go_return_mul() {
 // True {} -> n {}
 CodeLabel eval_go_let_valueOfs_return_True() {
   PRINT_FUNCTION_NAME();
-  Node = pop_b(); // restore Node
+  load_node();
   pop_a();        // pop y
   StgWord n = Node[2];
   Node = n;
@@ -380,7 +392,7 @@ CodeLabel eval_go_let_valueOfs_return_True() {
 // _ -> valueOf {y}
 CodeLabel eval_go_let_valueOfs_return_False() {
   PRINT_FUNCTION_NAME();
-  Node = pop_b(); // restore Node
+  load_node();
   StgWord *valueOf = Node[3];
   StgWord *y = SpA[0];
   pop_a(); // pop y
@@ -397,7 +409,7 @@ CodeLabel eval_go_let_valueOfs_entry() {
   StgWord y = SpA[0];
   push_a(y);
   push_a(x);
-  push_b(Node); // save Node
+  save_node(Node);
   push_b(eval_go_let_valueOfs_return_vec);
   JUMP(id_eq_direct); // static
 }
@@ -405,7 +417,7 @@ StgWord eval_go_let_valueOfs_info[] = {eval_go_let_valueOfs_entry};
 // Let {x,e,body} -> ...
 CodeLabel eval_go_return_let() {
   PRINT_FUNCTION_NAME();
-  Node = pop_b(); // restore Node
+  load_node();
   StgWord *valueOf = Node[1];
   StgWord *go = Node[2];
   StgWord x = ExprReg1;
@@ -436,7 +448,7 @@ StgWord eval_go_return_vec[] = {eval_go_return_lit, eval_go_return_var,
 // go = {valueOf,go} \n {expr} ->
 CodeLabel eval_go_entry() {
   PRINT_FUNCTION_NAME();
-  push_b(Node); // save Node
+  save_node();
   Node = SpA[0];
   push_b(eval_go_return_vec);
   ENTER(Node);
