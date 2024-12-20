@@ -33,11 +33,11 @@ StgWord *Hp = heap;
 StgWord *Node;
 StgWord *RetVecReg;
 
-int int_reg;
-StgWord var_id_reg;
-StgWord expr_reg1;
-StgWord expr_reg2;
-StgWord expr_reg3;
+int IntReg;
+StgWord VarIdReg;
+StgWord ExprReg1;
+StgWord ExprReg2;
+StgWord ExprReg3;
 
 void push_b(StgWord value) {
   SpB[1] = value;
@@ -69,7 +69,7 @@ void allocate(StgWord value) {
 // one = {} \n {} -> Int# {1#}
 CodeLabel one_direct() {
   PRINT_FUNCTION_NAME();
-  int_reg = 1;
+  IntReg = 1;
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
@@ -82,7 +82,7 @@ StgWord one_info[] = {one_entry};
 // two = {} \n {} -> Int# {2#}
 CodeLabel two_direct() {
   PRINT_FUNCTION_NAME();
-  int_reg = 2;
+  IntReg = 2;
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
@@ -95,7 +95,7 @@ StgWord two_info[] = {two_entry};
 // one_hundred = {} \n {} -> Int# {100#}
 CodeLabel one_hundred_direct() {
   PRINT_FUNCTION_NAME();
-  int_reg = 100;
+  IntReg = 100;
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_INT]); // continue with Int#
 }
@@ -110,8 +110,8 @@ StgWord one_hundred_info[] = {one_hundred_entry};
 CodeLabel plus_return_Int2() {
   PRINT_FUNCTION_NAME();
   int lI = (intptr_t)pop_b();
-  int rI = int_reg;
-  int_reg = lI + rI;
+  int rI = IntReg;
+  IntReg = lI + rI;
   RetVecReg = pop_b();
   pop_a();                  // pop l
   pop_a();                  // pop r
@@ -122,7 +122,7 @@ StgWord plus_return_vec2[] = {plus_return_Int2};
 CodeLabel plus_return_Int1() {
   PRINT_FUNCTION_NAME();
   push_b(plus_return_vec2);
-  push_b((StgWord)(intptr_t)int_reg); // push l
+  push_b((StgWord)(intptr_t)IntReg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r
 }
@@ -146,8 +146,8 @@ StgWord plus_info[] = {plus_entry};
 CodeLabel mult_return_Int2() {
   PRINT_FUNCTION_NAME();
   int lI = (intptr_t)pop_b();
-  int rI = int_reg;
-  int_reg = lI * rI;
+  int rI = IntReg;
+  IntReg = lI * rI;
   RetVecReg = pop_b();
   pop_a();                  // pop l
   pop_a();                  // pop r
@@ -158,7 +158,7 @@ StgWord mult_return_vec2[] = {mult_return_Int2};
 CodeLabel mult_return_Int1() {
   PRINT_FUNCTION_NAME();
   push_b(mult_return_vec2);
-  push_b((StgWord)(intptr_t)int_reg); // push l
+  push_b((StgWord)(intptr_t)IntReg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r
 }
@@ -182,8 +182,8 @@ StgWord mult_info[] = {mult_entry};
 CodeLabel sub_return_Int2() {
   PRINT_FUNCTION_NAME();
   int lI = (intptr_t)pop_b();
-  int rI = int_reg;
-  int_reg = lI - rI;
+  int rI = IntReg;
+  IntReg = lI - rI;
   RetVecReg = pop_b();
   pop_a();                  // pop l
   pop_a();                  // pop r
@@ -194,7 +194,7 @@ StgWord sub_return_vec2[] = {sub_return_Int2};
 CodeLabel sub_return_Int1() {
   PRINT_FUNCTION_NAME();
   push_b(sub_return_vec2);
-  push_b((StgWord)(intptr_t)int_reg); // push l
+  push_b((StgWord)(intptr_t)IntReg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r
 }
@@ -218,7 +218,7 @@ StgWord sub_info[] = {sub_entry};
 CodeLabel eq_return_Int2() {
   PRINT_FUNCTION_NAME();
   int lI = (intptr_t)pop_b();
-  int rI = int_reg;
+  int rI = IntReg;
   RetVecReg = pop_b();
   pop_a(); // pop l
   pop_a(); // pop r
@@ -233,7 +233,7 @@ StgWord eq_return_vec2[] = {eq_return_Int2};
 CodeLabel eq_return_Int1() {
   PRINT_FUNCTION_NAME();
   push_b(eq_return_vec2);
-  push_b((StgWord)(intptr_t)int_reg); // push l
+  push_b((StgWord)(intptr_t)IntReg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r
 }
@@ -257,7 +257,7 @@ StgWord eq_info[] = {eq_entry};
 CodeLabel id_eq_return_VarId2() {
   PRINT_FUNCTION_NAME();
   StgWord l = pop_b();
-  StgWord r = var_id_reg;
+  StgWord r = VarIdReg;
   pop_a(); // pop l_id
   pop_a(); // pop r_id
   push_a(r);
@@ -269,7 +269,7 @@ StgWord id_eq_return_vec2[] = {id_eq_return_VarId2};
 CodeLabel id_eq_return_VarId1() {
   PRINT_FUNCTION_NAME();
   push_b(id_eq_return_vec2);
-  push_b(var_id_reg); // push l
+  push_b(VarIdReg); // push l
   Node = SpA[1];
   ENTER(Node); // enter r_id
 }
@@ -289,6 +289,37 @@ CodeLabel id_eq_entry() {
 StgWord id_eq_info[] = {id_eq_entry};
 
 ///// eval /////
+
+// Lit {n} -> n {}
+CodeLabel eval_go_return_lit() {
+  PRINT_FUNCTION_NAME();
+  pop_a(); // pop expr
+  StgWord n = ExprReg1;
+  Node = n;
+  ENTER(n);
+}
+CodeLabel eval_go_return_var() {
+  PRINT_FUNCTION_NAME();
+}
+CodeLabel eval_go_return_add() {
+  PRINT_FUNCTION_NAME();
+}
+CodeLabel eval_go_return_mul() {
+  PRINT_FUNCTION_NAME();
+}
+CodeLabel eval_go_return_let() {
+  PRINT_FUNCTION_NAME();
+}
+StgWord eval_go_return_vec[] = {eval_go_return_lit, eval_go_return_var, eval_go_return_add, eval_go_return_mul, eval_go_return_let};
+
+// go = {valueOf,go} \n {expr} ->
+CodeLabel eval_go_entry() {
+  PRINT_FUNCTION_NAME();
+  Node = SpA[0];
+  push_b(eval_go_return_vec);
+  ENTER(Node);
+}
+StgWord eval_go_info[] = {eval_go_entry};
 
 // eval = {} \n {valueOf,expr} -> ...
 CodeLabel eval_direct() {
@@ -338,8 +369,8 @@ StgWord pow_ns_info[] = {pow_ns_entry};
 
 CodeLabel pow_return_Int1() {
   PRINT_FUNCTION_NAME();
-  if (int_reg == 0) {
-    expr_reg1 = (StgWord)1;
+  if (IntReg == 0) {
+    ExprReg1 = (StgWord)1;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
@@ -357,8 +388,8 @@ CodeLabel pow_return_Int1() {
     allocate(e);
     allocate((StgWord)ns);
     // return
-    expr_reg1 = (StgWord)ns;
-    expr_reg2 = (StgWord)pows;
+    ExprReg1 = (StgWord)ns;
+    ExprReg2 = (StgWord)pows;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
@@ -400,8 +431,8 @@ CodeLabel sops_add_entry() {
   PRINT_FUNCTION_NAME();
   StgWord var_z = Node[1];
   StgWord sops = Node[2];
-  expr_reg1 = var_z;
-  expr_reg2 = sops;
+  ExprReg1 = var_z;
+  ExprReg2 = sops;
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_ADD]);
 }
@@ -411,7 +442,7 @@ StgWord sop_add_info[] = {sops_add_entry};
 CodeLabel sops_var_z_entry() {
   PRINT_FUNCTION_NAME();
   StgWord z = Node[1];
-  expr_reg1 = z;
+  ExprReg1 = z;
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_VAR]);
 }
@@ -432,7 +463,7 @@ StgWord sop_sops_info[] = {sops_sops_entry};
 CodeLabel sops_z_entry() {
   PRINT_FUNCTION_NAME();
   StgWord n = Node[1];
-  var_id_reg = n;
+  VarIdReg = n;
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_VAR_ID]);
 }
@@ -450,8 +481,8 @@ StgWord sop_ns_info[] = {sops_ns_entry};
 
 CodeLabel sop_return_Int1() {
   PRINT_FUNCTION_NAME();
-  if (int_reg == 0) {
-    expr_reg1 = (StgWord)1;
+  if (IntReg == 0) {
+    ExprReg1 = (StgWord)1;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
@@ -487,9 +518,9 @@ CodeLabel sop_return_Int1() {
     allocate(e);
     allocate((StgWord)n);
     // return
-    expr_reg1 = (StgWord)z;
-    expr_reg2 = (StgWord)pows;
-    expr_reg3 = (StgWord)add;
+    ExprReg1 = (StgWord)z;
+    ExprReg2 = (StgWord)pows;
+    ExprReg3 = (StgWord)add;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
@@ -515,7 +546,7 @@ StgWord sop_info[] = {sop_entry};
 
 CodeLabel return_int() {
   PRINT_FUNCTION_NAME();
-  printf("Result = %d\n", int_reg);
+  printf("Result = %d\n", IntReg);
   exit(0);
 }
 StgWord return_int_return_vec[] = {return_int};
