@@ -28,6 +28,8 @@
 typedef void *(*CodeLabel)();
 typedef void *StgWord;
 
+int steps = 0;
+
 StgWord Sp[STACK_SIZE];
 StgWord *SpB = Sp;
 StgWord **SpA = (StgWord **)&Sp[STACK_SIZE];
@@ -728,6 +730,10 @@ StgWord sop_closure[] = {sop_info};
 CodeLabel return_int() {
   PRINT_FUNCTION_NAME();
   printf("Result = %d\n", IntReg);
+  printf("Steps = %d\n", steps);
+  printf("Stack A size = %d\n", (void *)SpA - (void *)&Sp[STACK_SIZE]);
+  printf("Stack B size = %d\n", (void *)SpB - (void *)Sp);
+  printf("Heap size = %d\n", (void *)Hp - (void *)heap);
   exit(0);
 }
 StgWord return_int_return_vec[] = {return_int};
@@ -859,6 +865,7 @@ int main() {
   push_b(return_int_return_vec, NAME_OF(return_int_return_vec));
   CodeLabel cont = (CodeLabel)&main_entry;
   while (1) {
+    steps++;
     cont = (*cont)();
   }
   return 0;
