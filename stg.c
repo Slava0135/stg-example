@@ -90,11 +90,11 @@ StgWord *arg(int offset) {
 }
 
 int nodes_saved = 0;
-void save_node() {
+void save_node_b() {
   nodes_saved++;
   push_b(Node, "save node");
 }
-void load_node() {
+void load_node_b() {
   assert(nodes_saved > 0);
   nodes_saved--;
   Node = pop_b();
@@ -152,6 +152,7 @@ StgWord one_hundred_closure[] = {one_hundred_info};
 
 ///// plus /////
 
+// Int# {rI} -> case +# {lI,rI}
 CodeLabel plus_return_Int2() {
   PRINT_FUNCTION_NAME();
   int lI = (intptr_t)pop_b();
@@ -164,9 +165,10 @@ CodeLabel plus_return_Int2() {
 }
 StgWord plus_return_vec2[] = {plus_return_Int2};
 
+// Int# {lI} -> case r {}
 CodeLabel plus_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b((StgWord)(intptr_t)IntReg, "l");
+  push_b((StgWord)(intptr_t)IntReg, "lI");
   push_b(plus_return_vec2, NAME_OF(plus_return_vec2));
   Node = arg(1);
   ENTER(Node); // enter r
@@ -189,6 +191,7 @@ StgWord plus_closure[] = {plus_info};
 
 ///// mult /////
 
+// Int# {rI} -> case *# {lI,rI}
 CodeLabel mult_return_Int2() {
   PRINT_FUNCTION_NAME();
   int lI = (intptr_t)pop_b();
@@ -201,9 +204,10 @@ CodeLabel mult_return_Int2() {
 }
 StgWord mult_return_vec2[] = {mult_return_Int2};
 
+// Int# {lI} -> case r {}
 CodeLabel mult_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b((StgWord)(intptr_t)IntReg, "l");
+  push_b((StgWord)(intptr_t)IntReg, "lI");
   push_b(mult_return_vec2, NAME_OF(mult_return_vec2));
   Node = arg(1);
   ENTER(Node); // enter r
@@ -226,6 +230,7 @@ StgWord mult_closure[] = {mult_info};
 
 ///// sub /////
 
+// Int# {rI} -> case -# {lI,rI}
 CodeLabel sub_return_Int2() {
   PRINT_FUNCTION_NAME();
   int lI = (intptr_t)pop_b();
@@ -238,9 +243,10 @@ CodeLabel sub_return_Int2() {
 }
 StgWord sub_return_vec2[] = {sub_return_Int2};
 
+// Int# {lI} -> case r {}
 CodeLabel sub_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b((StgWord)(intptr_t)IntReg, "l");
+  push_b((StgWord)(intptr_t)IntReg, "lI");
   push_b(sub_return_vec2, NAME_OF(sub_return_vec2));
   Node = arg(1);
   ENTER(Node); // enter r
@@ -263,6 +269,7 @@ StgWord sub_closure[] = {sub_info};
 
 ///// eq /////
 
+// Int# {rI} -> case ==# {lI,rI}
 CodeLabel eq_return_Int2() {
   PRINT_FUNCTION_NAME();
   int lI = (intptr_t)pop_b();
@@ -278,6 +285,7 @@ CodeLabel eq_return_Int2() {
 }
 StgWord eq_return_vec2[] = {eq_return_Int2};
 
+// Int# {lI} -> case r {}
 CodeLabel eq_return_Int1() {
   PRINT_FUNCTION_NAME();
   push_b((StgWord)(intptr_t)IntReg, "l");
@@ -303,6 +311,7 @@ StgWord eq_closure[] = {eq_info};
 
 ///// id_eq /////
 
+// VarId {l} -> case r_id {}
 CodeLabel id_eq_return_VarId2() {
   PRINT_FUNCTION_NAME();
   StgWord l = pop_b();
@@ -315,6 +324,7 @@ CodeLabel id_eq_return_VarId2() {
 }
 StgWord id_eq_return_vec2[] = {id_eq_return_VarId2};
 
+// {} \n {l_id,r_id} -> case l_id {}
 CodeLabel id_eq_return_VarId1() {
   PRINT_FUNCTION_NAME();
   push_b(VarIdReg, "l");
@@ -345,7 +355,7 @@ CodeLabel eval_direct();
 // Lit {n} -> n {}
 CodeLabel eval_go_return_lit() {
   PRINT_FUNCTION_NAME();
-  load_node();
+  load_node_b();
   pop_a(); // pop expr
   StgWord n = ExprReg1;
   Node = n;
@@ -354,7 +364,7 @@ CodeLabel eval_go_return_lit() {
 // Var {x} -> valueOf {x}
 CodeLabel eval_go_return_var() {
   PRINT_FUNCTION_NAME();
-  load_node();
+  load_node_b();
   StgWord *valueOf = Node[1];
   pop_a(); // pop expr
   StgWord x = ExprReg1;
@@ -377,7 +387,7 @@ CodeLabel eval_go_go_lrn_entry() {
 StgWord eval_go_go_lrn_info[] = {eval_go_go_lrn_entry};
 
 void eval_go_return_add_mul_common() {
-  load_node();
+  load_node_b();
   StgWord *go = Node[2];
   StgWord l = ExprReg1;
   StgWord r = ExprReg2;
@@ -413,7 +423,7 @@ CodeLabel eval_go_return_mul() {
 // True {} -> n {}
 CodeLabel eval_go_let_valueOfs_return_True() {
   PRINT_FUNCTION_NAME();
-  load_node();
+  load_node_b();
   pop_a(); // pop y
   StgWord n = Node[2];
   Node = n;
@@ -422,7 +432,7 @@ CodeLabel eval_go_let_valueOfs_return_True() {
 // _ -> valueOf {y}
 CodeLabel eval_go_let_valueOfs_return_False() {
   PRINT_FUNCTION_NAME();
-  load_node();
+  load_node_b();
   StgWord *valueOf = Node[3];
   StgWord *y = arg(0);
   pop_a(); // pop y
@@ -432,6 +442,7 @@ CodeLabel eval_go_let_valueOfs_return_False() {
 }
 StgWord eval_go_let_valueOfs_return_vec[] = {eval_go_let_valueOfs_return_True,
                                              eval_go_let_valueOfs_return_False};
+
 // valueOf' = {x,n,valueOf} \n {y} -> case id_eq {x,y}
 CodeLabel eval_go_let_valueOfs_entry() {
   PRINT_FUNCTION_NAME();
@@ -439,7 +450,7 @@ CodeLabel eval_go_let_valueOfs_entry() {
   StgWord y = arg(0);
   push_a(y, NAME_OF(y));
   push_a(x, NAME_OF(x));
-  save_node();
+  save_node_b();
   push_b(eval_go_let_valueOfs_return_vec,
          NAME_OF(eval_go_let_valueOfs_return_vec));
   JUMP(id_eq_direct); // static
@@ -448,7 +459,7 @@ StgWord eval_go_let_valueOfs_info[] = {eval_go_let_valueOfs_entry};
 // Let {x,e,body} -> ...
 CodeLabel eval_go_return_let() {
   PRINT_FUNCTION_NAME();
-  load_node();
+  load_node_b();
   StgWord *valueOf = Node[1];
   StgWord *go = Node[2];
   StgWord x = ExprReg1;
@@ -479,7 +490,7 @@ StgWord eval_go_return_vec[] = {eval_go_return_lit, eval_go_return_var,
 // go = {valueOf,go} \n {expr} ->
 CodeLabel eval_go_entry() {
   PRINT_FUNCTION_NAME();
-  save_node();
+  save_node_b();
   Node = arg(0);
   push_b(eval_go_return_vec, NAME_OF(eval_go_return_vec));
   ENTER(Node);
@@ -514,6 +525,16 @@ StgWord eval_closure[] = {eval_info};
 
 CodeLabel pow_direct();
 
+// n' = {n} \u {} -> sub {n,one}
+CodeLabel pow_ns_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord n = Node[1];
+  push_a(one_closure, NAME_OF(one_closure));
+  push_a(n, NAME_OF(n));
+  JUMP(sub_direct); // static
+}
+StgWord pow_ns_info[] = {pow_ns_entry};
+
 // pow' = {e,n'} \u {} -> pow {e,n'}
 CodeLabel pow_pows_entry() {
   PRINT_FUNCTION_NAME();
@@ -524,16 +545,6 @@ CodeLabel pow_pows_entry() {
   JUMP(pow_direct); // static
 }
 StgWord pow_pows_info[] = {pow_pows_entry};
-
-// n' = {n} \u {} -> sub {n,one}
-CodeLabel pow_ns_entry() {
-  PRINT_FUNCTION_NAME();
-  StgWord n = Node[1];
-  push_a(one_closure, NAME_OF(one_closure));
-  push_a(n, NAME_OF(n));
-  JUMP(sub_direct); // static
-}
-StgWord pow_ns_info[] = {pow_ns_entry};
 
 CodeLabel pow_return_Int1() {
   PRINT_FUNCTION_NAME();
@@ -584,50 +595,6 @@ StgWord pow_closure[] = {pow_info};
 
 CodeLabel sop_direct();
 
-// pow' = {e,n} \u {} -> pow {e,n}
-CodeLabel sops_pows_entry() {
-  PRINT_FUNCTION_NAME();
-  StgWord e = Node[1];
-  StgWord n = Node[2];
-  push_a(n, NAME_OF(n));
-  push_a(e, NAME_OF(e));
-  JUMP(pow_direct); // static
-}
-StgWord sop_pows_info[] = {sops_pows_entry};
-
-// add = {var_z,sop'} \n {} Add {var_z,sop'}
-CodeLabel sops_add_entry() {
-  PRINT_FUNCTION_NAME();
-  StgWord var_z = Node[1];
-  StgWord sops = Node[2];
-  ExprReg1 = var_z;
-  ExprReg2 = sops;
-  RetVecReg = pop_b();
-  JUMP(RetVecReg[RET_ADD]); // continue with Add
-}
-StgWord sop_add_info[] = {sops_add_entry};
-
-// var_z = {z} \n {} -> Var {z}
-CodeLabel sops_var_z_entry() {
-  PRINT_FUNCTION_NAME();
-  StgWord z = Node[1];
-  ExprReg1 = z;
-  RetVecReg = pop_b();
-  JUMP(RetVecReg[RET_VAR]); // continue with Var
-}
-StgWord sop_var_z_info[] = {sops_var_z_entry};
-
-// sop' = {e,n'} \u {} -> sop {e,n'}
-CodeLabel sops_sops_entry() {
-  PRINT_FUNCTION_NAME();
-  StgWord e = Node[1];
-  StgWord ns = Node[2];
-  push_a(ns, NAME_OF(ns));
-  push_a(e, NAME_OF(e));
-  JUMP(sop_direct); // static
-}
-StgWord sop_sops_info[] = {sops_sops_entry};
-
 // z = {n} \n {} -> VarId {n}
 CodeLabel sops_z_entry() {
   PRINT_FUNCTION_NAME();
@@ -647,6 +614,50 @@ CodeLabel sops_ns_entry() {
   JUMP(sub_direct); // static
 }
 StgWord sop_ns_info[] = {sops_ns_entry};
+
+// sop' = {e,n'} \u {} -> sop {e,n'}
+CodeLabel sops_sops_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord e = Node[1];
+  StgWord ns = Node[2];
+  push_a(ns, NAME_OF(ns));
+  push_a(e, NAME_OF(e));
+  JUMP(sop_direct); // static
+}
+StgWord sop_sops_info[] = {sops_sops_entry};
+
+// var_z = {z} \n {} -> Var {z}
+CodeLabel sops_var_z_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord z = Node[1];
+  ExprReg1 = z;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_VAR]); // continue with Var
+}
+StgWord sop_var_z_info[] = {sops_var_z_entry};
+
+// add = {var_z,sop'} \n {} Add {var_z,sop'}
+CodeLabel sops_add_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord var_z = Node[1];
+  StgWord sops = Node[2];
+  ExprReg1 = var_z;
+  ExprReg2 = sops;
+  RetVecReg = pop_b();
+  JUMP(RetVecReg[RET_ADD]); // continue with Add
+}
+StgWord sop_add_info[] = {sops_add_entry};
+
+// pow' = {e,n} \u {} -> pow {e,n}
+CodeLabel sops_pows_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord e = Node[1];
+  StgWord n = Node[2];
+  push_a(n, NAME_OF(n));
+  push_a(e, NAME_OF(e));
+  JUMP(pow_direct); // static
+}
+StgWord sop_pows_info[] = {sops_pows_entry};
 
 CodeLabel sop_return_Int1() {
   PRINT_FUNCTION_NAME();
