@@ -451,8 +451,8 @@ CodeLabel eval_direct() {
   // fill closure go = {valueOf,go} \n {expr} -> case expr {}
   allocate(eval_go_info);
   StgWord *go = Hp;
-  allocate((StgWord)valueOf);
-  allocate((StgWord)go);
+  allocate(valueOf);
+  allocate(go);
   // call go {expr}
   pop_a(); // pop valueOf
   pop_a(); // pop expr
@@ -628,7 +628,7 @@ CodeLabel sop_return_Int1() {
     allocate(sop_sops_info);
     StgWord *sops = Hp;
     allocate(e);
-    allocate((StgWord)ns);
+    allocate(ns);
     // fill closure var_z = {z} \n {} -> Var {z}
     allocate(sop_var_z_info);
     StgWord *var_z = Hp;
@@ -642,11 +642,11 @@ CodeLabel sop_return_Int1() {
     allocate(sop_pows_info);
     StgWord *pows = Hp;
     allocate(e);
-    allocate((StgWord)n);
+    allocate(n);
     // return
-    ExprReg1 = (StgWord)z;
-    ExprReg2 = (StgWord)pows;
-    ExprReg3 = (StgWord)add;
+    ExprReg1 = z;
+    ExprReg2 = pows;
+    ExprReg3 = add;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
