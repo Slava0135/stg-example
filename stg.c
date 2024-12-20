@@ -136,8 +136,8 @@ StgWord plus_return_vec2[] = {plus_return_Int2};
 
 CodeLabel plus_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b(plus_return_vec2);
   push_b((StgWord)(intptr_t)IntReg); // push l
+  push_b(plus_return_vec2);
   Node = SpA[1];
   ENTER(Node); // enter r
 }
@@ -173,8 +173,8 @@ StgWord mult_return_vec2[] = {mult_return_Int2};
 
 CodeLabel mult_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b(mult_return_vec2);
   push_b((StgWord)(intptr_t)IntReg); // push l
+  push_b(mult_return_vec2);
   Node = SpA[1];
   ENTER(Node); // enter r
 }
@@ -210,8 +210,8 @@ StgWord sub_return_vec2[] = {sub_return_Int2};
 
 CodeLabel sub_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b(sub_return_vec2);
   push_b((StgWord)(intptr_t)IntReg); // push l
+  push_b(sub_return_vec2);
   Node = SpA[1];
   ENTER(Node); // enter r
 }
@@ -250,8 +250,8 @@ StgWord eq_return_vec2[] = {eq_return_Int2};
 
 CodeLabel eq_return_Int1() {
   PRINT_FUNCTION_NAME();
-  push_b(eq_return_vec2);
   push_b((StgWord)(intptr_t)IntReg); // push l
+  push_b(eq_return_vec2);
   Node = SpA[1];
   ENTER(Node); // enter r
 }
@@ -287,8 +287,8 @@ StgWord id_eq_return_vec2[] = {id_eq_return_VarId2};
 
 CodeLabel id_eq_return_VarId1() {
   PRINT_FUNCTION_NAME();
-  push_b(id_eq_return_vec2);
   push_b(VarIdReg); // push l
+  push_b(id_eq_return_vec2);
   Node = SpA[1];
   ENTER(Node); // enter r_id
 }
