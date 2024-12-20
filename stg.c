@@ -82,7 +82,7 @@ StgWord *pop_a() {
   return value;
 }
 
-StgWord* arg(int offset) {
+StgWord *arg(int offset) {
   StgWord value = SpA[offset];
   const char *debug_info = DebugSpA[offset];
   printf("\targument(%d): %x '%s'\n", offset, value, debug_info);
@@ -100,9 +100,10 @@ void load_node() {
   Node = pop_b();
 }
 
-void allocate(StgWord value) {
-  Hp[1] = value;
-  Hp = Hp + 1;
+StgWord *allocate(int size) {
+  StgWord ptr = Hp;
+  Hp = Hp + size;
+  return ptr;
 }
 
 ///// constants /////
@@ -381,19 +382,19 @@ void eval_go_return_add_mul_common() {
   StgWord l = ExprReg1;
   StgWord r = ExprReg2;
   // fill closure go_l = {go,l} \u {} -> go {l}
-  allocate(eval_go_go_lrn_info);
-  StgWord *go_l = Hp;
-  allocate(go);
-  allocate(l);
+  StgWord *go_l_closure = allocate(3);
+  go_l_closure[0] = eval_go_go_lrn_info;
+  go_l_closure[1] = go;
+  go_l_closure[2] = l;
   // fill closure go_r = {go,r} \u {} -> go {r}
-  allocate(eval_go_go_lrn_info);
-  StgWord *go_r = Hp;
-  allocate(go);
-  allocate(r);
+  StgWord *go_r_closure = allocate(3);
+  go_r_closure[0] = eval_go_go_lrn_info;
+  go_r_closure[1] = go;
+  go_r_closure[2] = r;
   // call plus/mult {go_l,go_r}
   pop_a(); // pop expr
-  push_a(go_r, NAME_OF(go_r));
-  push_a(go_l, NAME_OF(go_l));
+  push_a(go_r_closure, NAME_OF(go_r_closure));
+  push_a(go_l_closure, NAME_OF(go_l_closure));
 }
 
 // Add {l,r} -> ...
@@ -454,20 +455,20 @@ CodeLabel eval_go_return_let() {
   StgWord e = ExprReg2;
   StgWord body = ExprReg3;
   // fill closure n = {go,e} \u {} -> go {e}
-  allocate(eval_go_go_lrn_info);
-  StgWord *n = Hp;
-  allocate(go);
-  allocate(e);
+  StgWord *n_closure = allocate(3);
+  n_closure[0] = eval_go_go_lrn_info;
+  n_closure[1] = go;
+  n_closure[2] = e;
   // fill closure valueOf' = {x,n,valueOf} \n {y} -> case id_eq {x,y} of
-  allocate(eval_go_let_valueOfs_info);
-  StgWord *valueOfs = Hp;
-  allocate(x);
-  allocate(n);
-  allocate(valueOf);
+  StgWord *valueOfs_closure = allocate(4);
+  valueOfs_closure[0] = eval_go_let_valueOfs_info;
+  valueOfs_closure[1] = x;
+  valueOfs_closure[2] = n_closure;
+  valueOfs_closure[3] = valueOf;
   // call eval {valueOf',body}
   pop_a(); // pop expr
   push_a(body, NAME_OF(body));
-  push_a(valueOfs, NAME_OF(valueOfs));
+  push_a(valueOfs_closure, NAME_OF(valueOfs_closure));
   JUMP(eval_direct); // static
 }
 
@@ -491,14 +492,14 @@ CodeLabel eval_direct() {
   StgWord *valueOf = arg(0);
   StgWord *expr = arg(1);
   // fill closure go = {valueOf,go} \n {expr} -> case expr {}
-  allocate(eval_go_info);
-  StgWord *go = Hp;
-  allocate(valueOf);
-  allocate(go);
+  StgWord *go_closure = allocate(3);
+  go_closure[0] = eval_go_info;
+  go_closure[1] = valueOf;
+  go_closure[2] = go_closure;
   // call go {expr}
   pop_a(); // pop valueOf
   pop_a(); // pop expr
-  Node = go;
+  Node = go_closure;
   push_a(expr, NAME_OF(expr));
   ENTER(Node);
 }
@@ -546,17 +547,17 @@ CodeLabel pow_return_Int1() {
     StgWord e = Node[0];
     StgWord n = Node[1];
     // fill closure n' = {n} \u {} -> sub {n,one}
-    allocate(pow_ns_info);
-    StgWord *ns = Hp;
-    allocate(n);
+    StgWord *ns_closure = allocate(2);
+    ns_closure[0] = pow_ns_info;
+    ns_closure[1] = n;
     // fill closure pow' = {e,n'} \u {} -> pow {e,n'}
-    allocate(pow_pows_info);
-    StgWord *pows = Hp;
-    allocate(e);
-    allocate((StgWord)ns);
+    StgWord *pows_closure = allocate(3);
+    pows_closure[0] = pow_pows_info;
+    pows_closure[1] = e;
+    pows_closure[2] = ns_closure;
     // return
-    ExprReg1 = (StgWord)ns;
-    ExprReg2 = (StgWord)pows;
+    ExprReg1 = e;
+    ExprReg2 = pows_closure;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
@@ -656,39 +657,39 @@ CodeLabel sop_return_Int1() {
     pop_a();                  // pop n
     JUMP(RetVecReg[RET_LIT]); // continue with Lit
   } else {
-    StgWord e = Node[0];
+    StgWord e = Node[0]; // ??????????????????????????????????????????????????
     StgWord n = Node[1];
     // fill closure z = {n} \n {} -> VarId {n}
-    allocate(sop_z_info);
-    StgWord *z = Hp;
-    allocate(n);
+    StgWord *z_closure = allocate(2);
+    z_closure[0] = sop_z_info;
+    z_closure[1] = n;
     // fill closure n' = {n} \u {} -> sub n one;
-    allocate(sop_ns_info);
-    StgWord *ns = Hp;
-    allocate(n);
+    StgWord *ns_closure = allocate(2);
+    ns_closure[0] = sop_ns_info;
+    ns_closure[1] = n;
     // fill closure sop' = {e,n'} \u {} -> sop {e,n'}
-    allocate(sop_sops_info);
-    StgWord *sops = Hp;
-    allocate(e);
-    allocate(ns);
+    StgWord *sops_closure = allocate(3);
+    sops_closure[0] = sop_sops_info;
+    sops_closure[1] = e;
+    sops_closure[2] = ns_closure;
     // fill closure var_z = {z} \n {} -> Var {z}
-    allocate(sop_var_z_info);
-    StgWord *var_z = Hp;
-    allocate(z);
+    StgWord *var_z_closure = allocate(2);
+    var_z_closure[0] = sop_var_z_info;
+    var_z_closure[1] = z_closure;
     // fill closure add = {var_z,sop'} \n {} Add {var_z,sop'}
-    allocate(sop_add_info);
-    StgWord *add = Hp;
-    allocate(var_z);
-    allocate(sops);
+    StgWord *add_closure = allocate(3);
+    add_closure[0] = sop_add_info;
+    add_closure[1] = var_z_closure;
+    add_closure[2] = sops_closure;
     // fill closure pow' = {e,n} \u {} -> pow' {e,n}
-    allocate(sop_pows_info);
-    StgWord *pows = Hp;
-    allocate(e);
-    allocate(n);
+    StgWord *pows_closure = allocate(3);
+    pows_closure[0] = sop_pows_info;
+    pows_closure[1] = e;
+    pows_closure[2] = n;
     // return
-    ExprReg1 = z;
-    ExprReg2 = pows;
-    ExprReg3 = add;
+    ExprReg1 = z_closure;
+    ExprReg2 = pows_closure;
+    ExprReg3 = add_closure;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
@@ -805,30 +806,30 @@ StgWord main_valueOf_info[] = {main_valueOf_entry};
 CodeLabel main_direct() {
   PRINT_FUNCTION_NAME();
   // fill closure x = {} \n {} -> VarId {one_hundred}
-  allocate(main_x_info);
-  StgWord *x = Hp;
+  StgWord *x_closure = allocate(1);
+  x_closure[0] = main_x_info;
   // fill closure var_x = {x} \n {} -> Var {x}
-  allocate(main_var_x_info);
-  StgWord *var_x = Hp;
-  allocate(x);
+  StgWord *var_x_closure = allocate(2);
+  var_x_closure[0] = main_var_x_info;
+  var_x_closure[1] = x_closure;
   // fill closure lit_one = {} \n {} -> Lit {one}
-  allocate(main_lit_one_info);
-  StgWord *lit_one = Hp;
+  StgWord *lit_one_closure = allocate(1);
+  lit_one_closure[0] = main_lit_one_info;
   // fill closure add = {var_x,lit_one} \n {} -> Add {var_x,lit_one}
-  allocate(main_add_info);
-  StgWord *add = Hp;
-  allocate(var_x);
-  allocate(lit_one);
+  StgWord *add_closure = allocate(3);
+  add_closure[0] = main_add_info;
+  add_closure[1] = var_x_closure;
+  add_closure[2] = lit_one_closure;
   // fill closure e = {add} \u {} -> sop {add,two}
-  allocate(main_e_info);
-  StgWord *e = Hp;
-  allocate(add);
+  StgWord *e_closure = allocate(2);
+  e_closure[0] = main_e_info;
+  e_closure[1] = add_closure;
   // fill valueOf = {} \n {varid_i} -> case varid_i {}
-  allocate(main_valueOf_info);
-  StgWord *valueOf = Hp;
+  StgWord *valueOf_closure = allocate(1);
+  valueOf_closure[0] = main_valueOf_info;
   // call eval {valueOf,e}
-  push_a(e, NAME_OF(e));
-  push_a(valueOf, NAME_OF(valueOf));
+  push_a(e_closure, NAME_OF(e_closure));
+  push_a(valueOf_closure, NAME_OF(valueOf_closure));
   JUMP(eval_direct); // static
 }
 
