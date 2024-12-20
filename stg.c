@@ -538,7 +538,7 @@ StgWord pow_ns_info[] = {pow_ns_entry};
 CodeLabel pow_return_Int1() {
   PRINT_FUNCTION_NAME();
   if (IntReg == 0) {
-    ExprReg1 = (StgWord)1;
+    ExprReg1 = one_closure;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
@@ -651,7 +651,7 @@ StgWord sop_ns_info[] = {sops_ns_entry};
 CodeLabel sop_return_Int1() {
   PRINT_FUNCTION_NAME();
   if (IntReg == 0) {
-    ExprReg1 = (StgWord)1;
+    ExprReg1 = one_closure;
     RetVecReg = pop_b();
     pop_a();                  // pop e
     pop_a();                  // pop n
