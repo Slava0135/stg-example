@@ -584,12 +584,12 @@ StgWord pow_closure[] = {pow_info};
 
 CodeLabel sop_direct();
 
-// pow' = {e,n} \u {} -> pow' {e,n}
+// pow' = {e,n} \u {} -> pow {e,n}
 CodeLabel sops_pows_entry() {
   PRINT_FUNCTION_NAME();
   StgWord e = Node[1];
-  StgWord ns = Node[2];
-  push_a(ns, NAME_OF(ns));
+  StgWord n = Node[2];
+  push_a(n, NAME_OF(n));
   push_a(e, NAME_OF(e));
   JUMP(pow_direct); // static
 }
@@ -681,7 +681,7 @@ CodeLabel sop_return_Int1() {
     add_closure[0] = sop_add_info;
     add_closure[1] = var_z_closure;
     add_closure[2] = sops_closure;
-    // fill closure pow' = {e,n} \u {} -> pow' {e,n}
+    // fill closure pow' = {e,n} \u {} -> pow {e,n}
     StgWord *pows_closure = allocate(3);
     pows_closure[0] = sop_pows_info;
     pows_closure[1] = e;
@@ -780,6 +780,7 @@ CodeLabel main_valueOf_return_Int() {
   } else {
     IntReg = 0;
   }
+  pop_a(); // pop varid_i
   RetVecReg = pop_b();
   JUMP(RetVecReg[RET_INT]); // continue with Int
 }
