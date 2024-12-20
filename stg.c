@@ -290,6 +290,8 @@ StgWord id_eq_info[] = {id_eq_entry};
 
 ///// eval /////
 
+CodeLabel eval_direct();
+
 // Lit {n} -> n {}
 CodeLabel eval_go_return_lit() {
   PRINT_FUNCTION_NAME();
@@ -355,6 +357,37 @@ CodeLabel eval_go_return_mul() {
   JUMP(mult_direct); // static
 }
 
+// True {} -> n {}
+CodeLabel eval_go_let_valueOfs_return_True() {
+  PRINT_FUNCTION_NAME();
+  pop_a(); // pop y
+  StgWord n = Node[2];
+  Node = n;
+  ENTER(n);
+}
+// _ -> valueOf {y}
+CodeLabel eval_go_let_valueOfs_return_False() {
+  PRINT_FUNCTION_NAME();
+  StgWord *valueOf = Node[3];
+  StgWord *y = SpA[0];
+  pop_a(); // pop y
+  push_a(y);
+  Node = valueOf;
+  ENTER(Node);
+}
+StgWord eval_go_let_valueOfs_return_vec[] = {eval_go_let_valueOfs_return_True,
+                                             eval_go_let_valueOfs_return_False};
+// valueOf' = {x,n,valueOf} \n {y} -> case id_eq {x,y}
+CodeLabel eval_go_let_valueOfs_entry() {
+  PRINT_FUNCTION_NAME();
+  StgWord x = Node[1];
+  StgWord y = SpA[0];
+  push_a(y);
+  push_a(x);
+  push_b(eval_go_let_valueOfs_return_vec);
+  JUMP(id_eq_direct); // static
+}
+StgWord eval_go_let_valueOfs_info[] = {eval_go_let_valueOfs_entry};
 // Let {x,e,body} -> ...
 CodeLabel eval_go_return_let() {
   PRINT_FUNCTION_NAME();
