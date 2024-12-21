@@ -102,7 +102,10 @@ void load_node_b() {
   Node = pop_b();
 }
 
+int objects_allocated;
+
 StgWord *allocate(int size) {
+  objects_allocated++;
   StgWord ptr = Hp;
   Hp = Hp + size;
   return ptr;
@@ -734,6 +737,7 @@ CodeLabel return_int() {
   printf("Stack A size = %d\n", (void *)SpA - (void *)&Sp[STACK_SIZE]);
   printf("Stack B size = %d\n", (void *)SpB - (void *)Sp);
   printf("Heap size = %d\n", (void *)Hp - (void *)heap);
+  printf("Objects allocated = %d\n", objects_allocated);
   exit(0);
 }
 StgWord return_int_return_vec[] = {return_int};
